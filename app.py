@@ -586,29 +586,42 @@ def display_travel_history():
         """, unsafe_allow_html=True)
     else:
         for i, entry in enumerate(travel_history):
-            with st.expander(f"🏁 {entry['destination']} - {entry['date']}", expanded=(i==0)):
-                col1, col2 = st.columns([1, 2])
-                
-                with col1:
-                    st.markdown("**Trip Details**")
-                    st.info(f"**Destination:** {entry['destination']}")
-                    st.info(f"**Planned on:** {entry['date']}")
-                    
-                    if 'itinerary' in entry:
-                        itinerary = entry['itinerary']
-                        st.metric("Total Budget", itinerary.get('total_budget', 'N/A'))
-                
-                with col2:
-                    st.markdown("**Itinerary Overview**")
-                    if 'itinerary' in entry:
-                        itinerary = entry['itinerary']
-                        st.write(f"**{itinerary.get('itinerary_title', 'Your Travel Plan')}**")
-                        
-                        # Show first day as preview
-                        daily_itinerary = itinerary.get('daily_itinerary', {})
-                        if daily_itinerary:
-                            first_day = list(daily_itinerary.values())[0]
-                            st.caption(f"**Day 1 Theme:** {first_day.get('theme', 'Activities')}")
+            with st.expander(f"🚞 {entry['destination']} - {entry['date']}", expanded=(i==0)):
+                if 'itinerary' in entry:
+                    itinerary = entry['itinerary']
+                    st.markdown(f"### {itinerary.get('itinerary_title', 'Your Travel Plan')}")
+
+                    # Budget Overview
+                    st.metric("💰 Total Budget", itinerary.get('total_budget', 'N/A'))
+
+                    # Budget Breakdown
+                    st.markdown("<h5>💵 Budget Breakdown</h5>", unsafe_allow_html=True)
+                    budget_data = itinerary.get('budget_breakdown', {})
+                    if budget_data:
+                        cols = st.columns(len(budget_data))
+                        for j, (category, amount) in enumerate(budget_data.items()):
+                            with cols[j]:
+                                st.metric(category.title(), amount)
+
+                    # Daily Itinerary
+                    st.markdown("<h5>🗓️ Daily Itinerary</h5>", unsafe_allow_html=True)
+                    daily_itinerary = itinerary.get('daily_itinerary', {})
+                    for day, activities in daily_itinerary.items():
+                        st.markdown(f"**{day}: {activities.get('theme', 'Daily Activities')}**")
+                        time_slots = {
+                            "Morning": activities.get('morning', {}),
+                            "Afternoon": activities.get('afternoon', {}),
+                            "Evening": activities.get('evening', {})
+                        }
+                        for time_slot, details in time_slots.items():
+                            if details:
+                                st.markdown(f"- **{time_slot}:** {details.get('activity', 'Activity')} ({details.get('cost', 'Free')})")
+
+                    # Travel Tips
+                    st.markdown("<h5>💡 Travel Tips</h5>", unsafe_allow_html=True)
+                    tips = itinerary.get('travel_tips', [])
+                    for tip in tips:
+                        st.markdown(f"- {tip}")
     
     st.markdown("</div>", unsafe_allow_html=True)
 
