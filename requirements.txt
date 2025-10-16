@@ -1,4 +1,0 @@
-streamlit
-huggingface-hub
-pymongo
-requests
